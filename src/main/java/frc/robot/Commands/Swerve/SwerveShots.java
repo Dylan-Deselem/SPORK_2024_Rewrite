@@ -22,6 +22,7 @@ public class SwerveShots {
 
   public Command AutoAmp() {
     return Commands.sequence(
+
       Commands
         .either(
           mSwerve.drivetoPoint(
@@ -33,11 +34,10 @@ public class SwerveShots {
             kSwerve.kControls.AmpRotation
           ),
           () -> FieldConstants.IsBlueAllience()
-        )
-        .withTimeout(3),
+        ).withTimeout(3),
       Commands
         .run(() -> mSwerve.TeleopDrive(new Translation2d(0.1, 0), 0, false))
-        .withTimeout(0.2)
+        .withTimeout(0.1)
         .alongWith(
           Commands
             .waitUntil(mSwerve::getInAmpPosition)

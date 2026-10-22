@@ -4,6 +4,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkBase.IdleMode;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -53,15 +54,23 @@ public class RobotConstants {
         Math.PI / 2
       );
 
-      public static double MaxPathSpeed = 1.5;
+      public static double MaxPathSpeed = 2;
       public static double MaxPathAccel = 1.5;
 
-      public static double MaxAngularSpeed = 12;
-      public static double MaxAngularAccel = 5;
+      public static double MaxThetaSpeed = 12;
+      public static double MaxThetaAccel = 5;
+
+      public static double MaxAngularSpeed = 15;
+      public static double MaxAngularAccel = 10;
 
       public static TrapezoidProfile.Constraints Constraints = new TrapezoidProfile.Constraints(
         MaxPathSpeed,
         MaxPathAccel
+      );
+
+      public static TrapezoidProfile.Constraints ThetaConstraints = new TrapezoidProfile.Constraints(
+        MaxThetaSpeed,
+        MaxThetaAccel
       );
 
       public static TrapezoidProfile.Constraints AngularConstrants = new TrapezoidProfile.Constraints(
@@ -109,6 +118,10 @@ public class RobotConstants {
       public static double TranslationkP = 12;
       public static double TranslationkI = 0;
       public static double TranslationkD = 0;
+
+      public static double ThetaP = 20;
+      public static double ThetaI = 0.1;
+      public static double ThetaD = 0;
 
       public static double AngularkP = 4;
       public static double AngularkI = 0;

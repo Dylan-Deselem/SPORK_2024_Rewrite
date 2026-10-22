@@ -1,12 +1,13 @@
 package frc.robot.Constants;
 
+import java.io.IOException;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import java.io.IOException;
 
 // From FRC 2910
 // this is used to store information on the field mesurements
@@ -34,10 +35,11 @@ public class FieldConstants {
   }
 
   public static boolean IsBlueAllience() {
-    return (
-      DriverStation.getAlliance().isEmpty() ||
-      DriverStation.getAlliance().get() == DriverStation.Alliance.Blue
-    );
+    var Alliance = DriverStation.getAlliance();
+      if (Alliance.isPresent()) {
+        return Alliance.get() == DriverStation.Alliance.Blue;
+      }
+     return false;
   }
 
   // Speaker Mesurements

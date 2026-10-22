@@ -1,6 +1,10 @@
 package frc.robot.Subsystems;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
@@ -14,19 +18,16 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.RobotConstants;
 import frc.robot.Constants.RobotConstants.kSwerve;
 import frc.robot.Constants.RobotConstants.kSwerve.kVision.kLimelightNames;
-import frc.robot.Robot;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -128,10 +129,10 @@ public class Swerve extends SubsystemBase implements Logged {
       );
     Ycontrol =
       new ProfiledPIDController(
-        RobotConstants.kSwerve.kPIDConstants.TranslationkP,
-        0,
-        RobotConstants.kSwerve.kPIDConstants.TranslationkD,
-        RobotConstants.kSwerve.kControls.Constraints
+        RobotConstants.kSwerve.kPIDConstants.ThetaP,
+        RobotConstants.kSwerve.kPIDConstants.ThetaI,
+        RobotConstants.kSwerve.kPIDConstants.ThetaD,
+        RobotConstants.kSwerve.kControls.ThetaConstraints
       );
     THETAcontrol =
       new ProfiledPIDController(
@@ -141,10 +142,10 @@ public class Swerve extends SubsystemBase implements Logged {
         RobotConstants.kSwerve.kControls.AngularConstrants
       );
 
-    Xcontrol.setTolerance(0.05);
-    Ycontrol.setTolerance(0.05);
+    Xcontrol.setTolerance(Math.toRadians(1));
+    Ycontrol.setTolerance(Math.toRadians(1));
 
-    THETAcontrol.enableContinuousInput(0, Math.PI * 2);
+    THETAcontrol.enableContinuousInput(-Math.PI, Math.PI);
     THETAcontrol.setTolerance(0.05);
   }
 
@@ -280,14 +281,14 @@ public class Swerve extends SubsystemBase implements Logged {
   // Get Methods
   /////////
 
-  public Translation2d getTargetPoint() {
+  public Translation2d getSpeakerPoint() {
     if (FieldConstants.IsBlueAllience()) {
       return FieldConstants.BLUE_SPEAKER_TRANS;
     }
     return FieldConstants.RED_SPEAKER_TRANS;
   }
 
-  public Translation2d getGoalPosition() {
+  public Translation2d getAmpPosition() {
     if (FieldConstants.IsBlueAllience()) {
       return FieldConstants.BLUE_AMP_TRANS;
     }
@@ -353,15 +354,13 @@ public class Swerve extends SubsystemBase implements Logged {
   }
 
   public boolean getInAmpPosition() {
-    if (FieldConstants.IsBlueAllience()) {
+    if(getAmpPosition() == FieldConstants.BLUE_AMP_TRANS){
       return (
-        FieldConstants.BLUE_AMP_TRANS
+         FieldConstants.BLUE_AMP_TRANS
           .minus(getPose().getTranslation())
           .getNorm() <
-        1
-      );
-    }
-    return (
+          1);
+    }return (
       FieldConstants.RED_AMP_TRANS.minus(getPose().getTranslation()).getNorm() <
       1
     );
@@ -513,12 +512,7 @@ public class Swerve extends SubsystemBase implements Logged {
     DoubleSupplier yTrans,
     Translation2d goal
   ) {
-    return Commands
-      .runOnce(
-        () -> THETAcontrol.reset(getPose().getRotation().getDegrees(), getYawRate()),
-        this
-      )
-      .andThen(
+      return
         Commands.run(
           () -> {
             double xTranslation = MathUtil.applyDeadband(
@@ -556,8 +550,7 @@ public class Swerve extends SubsystemBase implements Logged {
             );
           },
           this
-        )
-      );
+        );
   }
 
   public Command drivetoPoint(Translation2d goal, Rotation2d RobotRotation) {
@@ -566,7 +559,7 @@ public class Swerve extends SubsystemBase implements Logged {
         () -> {
           ChassisSpeeds speeds = ChassisSpeeds.fromRobotRelativeSpeeds(
             getChassisSpeeds(),
-            getGyroAngle()
+            getPose().getRotation()
           );
           Xcontrol.reset(getPose().getX(), speeds.vxMetersPerSecond);
           Ycontrol.reset(getPose().getY(), speeds.vyMetersPerSecond);
